@@ -1,17 +1,27 @@
 # mdspec
-Looking at defining models / object specification in "plain text" for working w/ designers &amp; clients
+"Declarative Model Specifications, from markdown-ish plain text files"
 
+Looking at defining models / object specification in "plain text"
+for working w/ designers &amp; clients. 
 
 This is very much a hacky work-in-progress, / working out loud playground at the moment. 
 
 # The big idea:
 
-Gerkin is decent for describing functional requirements.
+Gerkin is alright for describing functional requirements - but the whole
+idea of "given/when/then" is very process oriented - whereas on 
 Django / Wagtail / CMS based sites often have many objects defined
 which automatically implement a tonne of features. (ie, A Page model
-with a few fields)
+with a few fields).
 
-Could we have something similar to gerkin for models / block functional requirements?
+They're implemented declaratively, not functionally.
+
+Could we have something similar to gerkin for models / blocks that are declarative
+not functional?
+
+And could we use a declarative style of specification, but in a plain-english type
+of format to facilitate that in a way that's easy to understand & share betweeen
+techies & non-techies?
 
 ## Example:
 (syntax subject to change)
