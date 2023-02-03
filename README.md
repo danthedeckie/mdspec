@@ -7,6 +7,8 @@ for working w/ designers &amp; clients.
 This is very much a hacky work-in-progress, / working out loud playground at the moment. 
 
 # The big idea:
+Tests in Python or JS are great, but not accessible to non-coders.
+Features need to be defined somehow, and agreed between parties.
 
 Gerkin is alright for describing functional requirements - but the whole
 idea of "given/when/then" is very process oriented - whereas on 
@@ -31,11 +33,11 @@ techies & non-techies?
 HomePage is a Page Type.
 It has these fields:
  - title : required, text, maximum 100 characters
- - banner image : optional
- - banner text : optional
+ - banner : image, optional
+ - banner : text, optional
  - contents (the main contents of the page...)
 
-The contents fields is a StreamField.
+The contents field is a StreamField.
 It has these blocks:
  - richtext
  - image
@@ -65,8 +67,38 @@ etc.
 It's structured though, so it can be parsed (by this project) into
 something we can then travese / execute as part of CI / tests.
 
-So for instance, we can find each defined page type, check that it
-has all required fields.
+it results in something like:
+```json
+{
+    "object_name": "HomePage",
+    "object_type": "Page",
+    "_field_types": ["fields"],
+    "fields": [
+        ["title", "required", "text", "maximum 100 characters"],
+        ["banner", "image", "optional"],
+        ["contents"]
+    ]
+},
+
+{
+    "object_name": "contents",
+    "object_type": "StreamField",
+    "_field_types": ["blocks"],
+    "blocks": [
+        ["richtext"]
+        ["image"]
+        ["raw-html"]
+        ...
+    ]
+}
+
+...
+```
+etc.  (Example, not actual format.  But structured something like that...)
+
+Now we have that specification as objects, it's pretty easy to write
+tests that automatically find each defined page type, check that it
+has all required fields, or whatever.
 
 We could also have tests that check that the admin page for each page
 type actually has all of those fields as form fields in the admin.
