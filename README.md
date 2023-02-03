@@ -20,10 +20,10 @@ Could we have something similar to gerkin for models / block functional requirem
 # HomePage
 HomePage is a Page Type.
 It has these fields:
- - title
- - banner image
- - banner text
- - contents
+ - title : required, text, maximum 100 characters
+ - banner image : optional
+ - banner text : optional
+ - contents (the main contents of the page...)
 
 The contents fields is a StreamField.
 It has these blocks:
@@ -31,6 +31,8 @@ It has these blocks:
  - image
  - raw-html
  - contact-form
+
+## Block definitions...
 
 richtext is a Wagtail Block.
 It has these fields:
@@ -64,6 +66,14 @@ then switching to gerken based cases makes a lot more sense, this
 spec type would just be for things which are structurely "defined" rather
 than functionally implemented... (if that makes sense?)
 
+## Thoughts:
+
+- anything in brakets (like this) is considered a comment, and ignored?
+- markdown titles are ignored too.
+- how can we have nice sections for random implementaion notes?
+  maybe use markdown quotation `> text` blocks?  Should those be
+  stored to use as docstrings in generation? or better not?
+
 # to play:
 
 
@@ -72,5 +82,9 @@ python modelspec.py spec/pages.spec
 ```
 and it should output a structured version of the contents.
 
+# What could we do with this?
 
-
+- Use it just as a structured way to define models / pages / etc.
+- Get sign off from different teams (BE / FE / Design / client...)
+- Run acceptance tests automatically off the structured data.
+- Generate initial model python code / tests / templates / etc?
