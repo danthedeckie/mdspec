@@ -78,9 +78,10 @@ than functionally implemented... (if that makes sense?)
 
 
 ```sh
-python modelspec.py spec/pages.spec
+python3 mdspec/parser.py examples/pages.md
 ```
 and it should output a structured version of the contents.
+(There will be tests run with `make test` too - WIP...)
 
 # What could we do with this?
 
