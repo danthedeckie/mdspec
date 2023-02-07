@@ -32,9 +32,9 @@ techies & non-techies?
 # HomePage
 HomePage is a Page Type.
 It has these fields:
- - title : required, text, maximum 100 characters
- - banner : image, optional
- - banner : text, optional
+ - title: required, text, maximum 100 characters
+ - banner: image, optional
+ - banner: text, optional
  - contents (the main contents of the page...)
 
 The contents field is a StreamField.
@@ -70,9 +70,8 @@ something we can then travese / execute as part of CI / tests.
 it results in something like:
 ```json
 {
-    "object_name": "HomePage",
-    "object_type": "Page",
-    "_field_types": ["fields"],
+    "_name": "HomePage",
+    "_type": "Page",
     "fields": [
         ["title", "required", "text", "maximum 100 characters"],
         ["banner", "image", "optional"],
@@ -81,24 +80,23 @@ it results in something like:
 },
 
 {
-    "object_name": "contents",
-    "object_type": "StreamField",
-    "_field_types": ["blocks"],
+    "_name": "contents",
+    "_type": "StreamField",
     "blocks": [
         ["richtext"]
         ["image"]
         ["raw-html"]
         ...
     ]
-}
+},
 
 ...
 ```
 etc.  (Example, not actual format.  But structured something like that...)
 
-Now we have that specification as objects, it's pretty easy to write
-tests that automatically find each defined page type, check that it
-has all required fields, or whatever.
+Now we have that specification as (dict / JSON / structured) objects,
+it's pretty easy to write tests that automatically find each defined page type,
+check that it has all required fields, or whatever.
 
 We could also have tests that check that the admin page for each page
 type actually has all of those fields as form fields in the admin.
@@ -131,3 +129,41 @@ and it should output a structured version of the contents.
 - Get sign off from different teams (BE / FE / Design / client...)
 - Run acceptance tests automatically off the structured data.
 - Generate initial model python code / tests / templates / etc?
+
+# Example thoughts:
+
+```markdown
+TeamPage is a Page Type
+it has these fields:
+ - title
+ - top_contents
+ - below_contents
+it has these connections:
+ - team: Person, many via "TeamPerson"
+```
+
+How much worse is this in gerkin?
+
+```gerkin
+Scenario:
+  Given an Index Page
+   When I add a child page
+   Then I should be able to add a TeamPage
+```
+and
+```gerkin
+Given a TeamPage
+ When I edit it in wagtail
+ Then I should be able to edit the title field
+  And I should be able to edit the top_contents field
+  ...
+```
+hm... it's so verbose.  But functional spec.
+
+I guess with this kind of declarative spec, we can pass that into other tests?
+```gerkin
+ Given <pagetype>
+  When I edit it in wagtail
+  Then I should be able to edit all defined fields
+```
+
