@@ -1,6 +1,6 @@
-from functools import cached_property
 import re
 import sys
+from functools import cached_property
 from typing import Optional
 
 
@@ -63,21 +63,31 @@ class Parser:
     def __init__(self):
         self.defined_objects = []
 
+    @property
+    def current_object(self):
+        return self.defined_objects[-1]
+
+    ##############################################
+    # Matcher methods:
+
     def start_type_class(self, type_name, type_class):
         self.defined_objects.append(ObjectSpec(type_name, type_class))
 
     def start_item_list(self, items_name):
-        self.defined_objects[-1].start_item_list(items_name)
+        self.current_object.start_item_list(items_name)
 
     def add_item(self, field_name):
         field_items = list(part.strip() for part in field_name.split(":"))
-        self.defined_objects[-1].add_item(field_items)
+        self.current_object.add_item(field_items)
 
     def is_defined_in(self, module_name):
-        self.defined_objects[-1]._module_name = module_name
+        self.current_object._module_name = module_name
 
     def noop(self):
         return
+
+    #############################################
+    # The main parsing routine:
 
     def parse_string(self, input_string):
         # strip comments:
