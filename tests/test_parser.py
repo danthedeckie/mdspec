@@ -1,4 +1,3 @@
-import json
 from unittest import TestCase
 
 from deepdiff import DeepDiff
@@ -14,11 +13,13 @@ class DifferentResult(AssertionError):
 
         source_intented = "\n  " + source.replace("\n", "\n  ")
 
+        formatted_result = str(diff)
+
         super().__init__(
             f"\nGiven:{source_intented}"
             f"\nExpected-Result:\n  {expected_result}"
             f"\nActual-Result:\n  {actual_result}"
-            f"\nDiff:\n  {json.dumps(diff, indent=2)}"
+            f"\nDiff:\n  {formatted_result}"
         )
 
 
@@ -37,6 +38,10 @@ class BaseTestCase(TestCase):
 
 
 class TestInitial(BaseTestCase):
+    def test_diff_assert_works(self):
+        with self.assertRaises(DifferentResult):
+            self.assertInputResultsIn("Foo is a Bar", [{"tis different!": "forsooth..."}])
+
     def test_parse_empty_string(self):
         self.assertInputResultsIn("", [])
 
@@ -44,8 +49,44 @@ class TestInitial(BaseTestCase):
         self.assertInputResultsIn("\n\n\n\n\n", [])
 
     def test_parse_empty_object(self):
-        self.assertInputResultsIn("Foo is a Bar", [ObjectSpec("Foo", "Bar")])
+        self.assertInputResultsIn("Foo is a Bar", [{"_name": "Foo", "_type": "Bar"}])
 
-    def test_diff_assert_works(self):
-        with self.assertRaises(DifferentResult):
-            self.assertInputResultsIn("Foo is a Bar", [ObjectSpec("Foo", "Balloon")])
+    def test_parse_object_including_fields(self):
+        self.assertInputResultsIn(
+            """
+            Foo is a Bar
+            It has these fields:
+             - red
+             - green
+             - blue
+            """,
+            [
+                {
+                    "_name": "Foo",
+                    "_type": "Bar",
+                    "fields": [["red"], ["green"], ["blue"]],
+                }
+            ],
+        )
+
+    def test_parse_object_including_fields_with_additional_values(self):
+        self.assertInputResultsIn(
+            """
+            Foo is a Bar
+            It has these fields:
+             - red: tomatos strawberries roses
+             - green: cabbage broccoli new-deals
+             - blue: oceans skys feelings
+            """,
+            [
+                {
+                    "_name": "Foo",
+                    "_type": "Bar",
+                    "fields": [
+                        ["red", "tomatos strawberries roses"],
+                        ["green", "cabbage broccoli new-deals"],
+                        ["blue", "oceans skys feelings"],
+                    ],
+                }
+            ],
+        )

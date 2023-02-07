@@ -52,6 +52,15 @@ class ObjectSpec:
 
         return False
 
+    def to_json(self):
+        result = {
+            "_name": self._type_name,
+            "_type": self._type_class,
+        }
+        for item_list in self._item_lists:
+            result[item_list] = getattr(self, item_list)
+        return result
+
 
 def start_type_class(defined_objects, type_name, type_class):
     defined_objects.append(ObjectSpec(type_name, type_class))
@@ -62,8 +71,8 @@ def start_item_list(defined_objects, items_name):
 
 
 def add_item(defined_objects, field_name):
-    field_tuple = tuple(part.strip() for part in field_name.split(":"))
-    defined_objects[-1].add_item(field_tuple)
+    field_items = list(part.strip() for part in field_name.split(":"))
+    defined_objects[-1].add_item(field_items)
 
 
 def is_defined_in(defined_objects, module_name):
@@ -105,7 +114,7 @@ def parse_string(input_string):
         else:
             print(f"Unknown line: {line}")
 
-    return defined_objects
+    return [object.to_json() for object in defined_objects]
 
 
 if __name__ == "__main__":
