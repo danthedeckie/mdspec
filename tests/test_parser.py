@@ -47,4 +47,5 @@ class TestInitial(BaseTestCase):
         self.assertInputResultsIn("Foo is a Bar", [ObjectSpec("Foo", "Bar")])
 
     def test_diff_assert_works(self):
-        self.assertInputResultsIn("Foo is a Bar", [ObjectSpec("Foo", "Balloon")])
+        with self.assertRaises(DifferentResult):
+            self.assertInputResultsIn("Foo is a Bar", [ObjectSpec("Foo", "Balloon")])
