@@ -1,45 +1,50 @@
+import json
 from unittest import TestCase
+
+from deepdiff import DeepDiff
 
 from mdspec.parser import ObjectSpec, parse_string
 
 
-class TestInitial(TestCase):
+class DifferentResult(AssertionError):
+    def __init__(self, source, expected_result, actual_result, diff) -> None:
+        self.source = source
+        self.expected_result = expected_result
+        self.actual_result = actual_result
+
+        source_intented = "\n  " + source.replace("\n", "\n  ")
+
+        super().__init__(
+            f"\nGiven:{source_intented}"
+            f"\nExpected-Result:\n  {expected_result}"
+            f"\nActual-Result:\n  {actual_result}"
+            f"\nDiff:\n  {json.dumps(diff, indent=2)}"
+        )
+
+
+class BaseTestCase(TestCase):
+    def assertInputResultsIn(self, source, expected_result):
+        actual_result = parse_string(source)
+        diff = DeepDiff(actual_result, expected_result)
+
+        if diff:
+            raise DifferentResult(
+                source=source,
+                expected_result=expected_result,
+                actual_result=actual_result,
+                diff=diff,
+            )
+
+
+class TestInitial(BaseTestCase):
     def test_parse_empty_string(self):
-        objects = parse_string("")
-        self.assertEqual(objects, [])
+        self.assertInputResultsIn("", [])
 
     def test_parse_empty_lines_string(self):
-        objects = parse_string("\n\n\n\n\n")
-        self.assertEqual(objects, [])
+        self.assertInputResultsIn("\n\n\n\n\n", [])
 
     def test_parse_empty_object(self):
-        objects = parse_string("Foo is a Bar")
-        self.assertEqual(objects, [ObjectSpec("Foo", "Bar")])
+        self.assertInputResultsIn("Foo is a Bar", [ObjectSpec("Foo", "Bar")])
 
-
-class TestCompare(TestCase):
-    """
-    For all the other tests to work, we need an easy way to compare object specs.
-    And we need that to be reliable...
-    """
-
-    def test_equal(self):
-        self.assertEqual(ObjectSpec("Foo", "Bar"), ObjectSpec("Foo", "Bar"))
-
-    def test_unequal_type_name(self):
-        self.assertNotEqual(ObjectSpec("Foo", "Bar"), ObjectSpec("Baz", "Bar"))
-
-    def test_unequal_type_class(self):
-        self.assertNotEqual(ObjectSpec("Foo", "Bar"), ObjectSpec("Foo", "Baz"))
-
-    def test_unequal_fields(self):
-        first = ObjectSpec("Foo", "Bar")
-        second = ObjectSpec("Foo", "Bar")
-        first.start_item_list("fields")
-        second.start_item_list("fields")
-        first.add_item("a")
-        second.add_item("b")
-
-        self.assertNotEqual(first, second)
-
-    # TODO - test for order?
+    def test_diff_assert_works(self):
+        self.assertInputResultsIn("Foo is a Bar", [ObjectSpec("Foo", "Balloon")])

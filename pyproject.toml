@@ -17,6 +17,10 @@ isort = "^5.12.0"
 [tool.poetry.group.local.dependencies]
 watchfiles = "^0.18.1"
 
+
+[tool.poetry.group.test.dependencies]
+deepdiff = "^6.2.3"
+
 [tool.black]
 line-length = 99
 target-version = ['py310']
