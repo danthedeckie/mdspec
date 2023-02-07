@@ -8,7 +8,7 @@ class ObjectSpec:
     Each main 'object' in the specification is parsed into one of these.
 
     It contains the name & type of each object (_type_name, _type_class)
-    and a list of all the field types on the object (_fieldlist), eg ['fields', 'methods']
+    and a list of all the field types on the object (_item_lists), eg ['fields', 'methods']
     Each of those field types is directly on the object itself (eg. self.fields, self.methods)
     Optionally it also has the name of the module where it should be defined ( _module_name)
     """
@@ -18,12 +18,12 @@ class ObjectSpec:
     _module_name: Optional[str] = None
     # TODO - think - would it be better just to keep these in a dict rather than directly putting
     # them on the object?
-    _fieldlist = list
+    _item_lists = list
 
     def __init__(self, type_name, type_class):
         self._type_name = type_name
         self._type_class = type_class
-        self._fieldlist = []
+        self._item_lists = []
 
     def __str__(self):
         return f"<{self._type_class}: {self._type_name}>"
@@ -33,19 +33,19 @@ class ObjectSpec:
 
     def start_item_list(self, items_name):
         setattr(self, items_name, [])
-        self._fieldlist.append(items_name)
+        self._item_lists.append(items_name)
 
     def add_item(self, item):
-        getattr(self, self._fieldlist[-1]).append(item)
+        getattr(self, self._item_lists[-1]).append(item)
 
     def __eq__(self, other):
         if (
             other._type_name == self._type_name
             and other._type_class == self._type_class
             and other._module_name == self._module_name
-            and set(self._fieldlist) == set(other._fieldlist)
+            and set(self._item_lists) == set(other._item_lists)
         ):
-            for fieldset in self._fieldlist:
+            for fieldset in self._item_lists:
                 if set(getattr(self, fieldset)) != set(getattr(other, fieldset)):
                     return False
             return True
@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
     for object in defined_objects:
         print(f"{object}:")
-        for fieldtype in object._fieldlist:
+        for fieldtype in object._item_lists:
             print(f"  {fieldtype}:")
             for field in getattr(object, fieldtype):
                 fieldname = field[0]
