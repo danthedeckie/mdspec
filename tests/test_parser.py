@@ -2,7 +2,7 @@ from unittest import TestCase
 
 from deepdiff import DeepDiff
 
-from mdspec.parser import ObjectSpec, parse_string
+from mdspec.parser import parse_string
 
 
 class DifferentResult(AssertionError):
