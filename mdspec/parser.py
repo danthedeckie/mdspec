@@ -12,6 +12,7 @@ class ObjectSpec:
     Each of those field types is directly on the object itself (eg. self.fields, self.methods)
     Optionally it also has the name of the module where it should be defined ( _module_name)
     """
+
     _type_class: str
     _type_name: str
     _module_name: Optional[str] = None
