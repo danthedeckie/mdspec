@@ -1,10 +1,27 @@
 import re
 import sys
 from functools import cached_property
-from typing import Optional
+from typing import Dict, List
 
 
 class Parser:
+    """
+    Parser for mdspec.
+
+    Usage:
+
+    >>> parser = mdspec.parser.Parser()
+    >>> parser.parse_string("Chocolate is a Yummy Treat")
+    [{"_type": "Yummy Treat", "_name": "Chocolate"}]
+
+    To extend:
+    ---
+    Override `matchers` and add your own compiled regexps
+    """
+
+    defined_objects: List[Dict]
+    current_list: List[List]
+
     @cached_property
     def matchers(self):
         return [
@@ -79,16 +96,8 @@ if __name__ == "__main__":
         defined_objects = read_spec_file(sys.argv[-1])
     else:
         print("usage: modelspec <filename>")
+        exit()
 
-    for object in defined_objects:
-        print(f"{object}:")
-        for fieldtype in object._item_lists:
-            print(f"  {fieldtype}:")
-            for field in getattr(object, fieldtype):
-                fieldname = field[0]
-                field_details = field[1:]
-                print(
-                    f"  - {field[0]}"
-                    f"{' : ' if field_details else ''}"
-                    f"{','.join(field_details) if field_details else ''}"
-                )
+    import json
+
+    print(json.dumps(defined_objects, indent=2))
