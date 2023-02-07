@@ -1,3 +1,4 @@
+from functools import cached_property
 import re
 import sys
 from typing import Optional
@@ -38,20 +39,6 @@ class ObjectSpec:
     def add_item(self, item):
         getattr(self, self._item_lists[-1]).append(item)
 
-    def __eq__(self, other):
-        if (
-            other._type_name == self._type_name
-            and other._type_class == self._type_class
-            and other._module_name == self._module_name
-            and set(self._item_lists) == set(other._item_lists)
-        ):
-            for fieldset in self._item_lists:
-                if set(getattr(self, fieldset)) != set(getattr(other, fieldset)):
-                    return False
-            return True
-
-        return False
-
     def to_json(self):
         result = {
             "_name": self._type_name,
@@ -62,34 +49,53 @@ class ObjectSpec:
         return result
 
 
-def start_type_class(defined_objects, type_name, type_class):
-    defined_objects.append(ObjectSpec(type_name, type_class))
+class Parser:
+    @cached_property
+    def matchers(self):
+        return [
+            (re.compile("(.*) is a (.*)", re.IGNORECASE), self.start_type_class),
+            (re.compile("it is defined in (.*)", re.IGNORECASE), self.is_defined_in),
+            (re.compile("It has these (.*):", re.IGNORECASE), self.start_item_list),
+            (re.compile("- (.*)", re.IGNORECASE), self.add_item),
+            (re.compile("^$"), self.noop),
+        ]
 
+    def __init__(self):
+        self.defined_objects = []
 
-def start_item_list(defined_objects, items_name):
-    defined_objects[-1].start_item_list(items_name)
+    def start_type_class(self, type_name, type_class):
+        self.defined_objects.append(ObjectSpec(type_name, type_class))
 
+    def start_item_list(self, items_name):
+        self.defined_objects[-1].start_item_list(items_name)
 
-def add_item(defined_objects, field_name):
-    field_items = list(part.strip() for part in field_name.split(":"))
-    defined_objects[-1].add_item(field_items)
+    def add_item(self, field_name):
+        field_items = list(part.strip() for part in field_name.split(":"))
+        self.defined_objects[-1].add_item(field_items)
 
+    def is_defined_in(self, module_name):
+        self.defined_objects[-1]._module_name = module_name
 
-def is_defined_in(defined_objects, module_name):
-    defined_objects[-1]._module_name = module_name
+    def noop(self):
+        return
 
+    def parse_string(self, input_string):
+        # strip comments:
+        contents = re.sub(r"\(.*\)", "", input_string)
 
-def noop(defined_objects):
-    return
+        for line in contents.splitlines():
+            line = line.strip().strip(".").strip()
+            # remove multiple spaces:
+            line = re.sub(r"\s+", " ", line)
 
+            for regexp, func in self.matchers:
+                if match := regexp.match(line):
+                    func(*match.groups())
+                    break
+            else:
+                print(f"Unknown line: {line}")
 
-matchers = [
-    (re.compile("(.*) is a (.*)", re.IGNORECASE), start_type_class),
-    (re.compile("it is defined in (.*)", re.IGNORECASE), is_defined_in),
-    (re.compile("It has these (.*):", re.IGNORECASE), start_item_list),
-    (re.compile("- (.*)", re.IGNORECASE), add_item),
-    (re.compile("^$"), noop),
-]
+        return [object.to_json() for object in self.defined_objects]
 
 
 def read_spec_file(filename):
@@ -97,24 +103,9 @@ def read_spec_file(filename):
         return parse_string(fh.read())
 
 
-def parse_string(input_string):
-    defined_objects = []
-    # strip comments:
-    contents = re.sub(r"\(.*\)", "", input_string)
-
-    for line in contents.splitlines():
-        line = line.strip().strip(".").strip()
-        # remove multiple spaces:
-        line = re.sub(r"\s+", " ", line)
-
-        for regexp, func in matchers:
-            if match := regexp.match(line):
-                func(defined_objects, *match.groups())
-                break
-        else:
-            print(f"Unknown line: {line}")
-
-    return [object.to_json() for object in defined_objects]
+def parse_string(input_value):
+    parser = Parser()
+    return parser.parse_string(input_value)
 
 
 if __name__ == "__main__":
