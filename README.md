@@ -1,6 +1,10 @@
 # mdspec
 "Declarative Model Specifications, from markdown-ish plain text files"
 
+![Build](https://github.com/danthedeckie/mdspec/actions/workflows/ci.yml/badge.svg)
+![PyPI](https://badgen.net/pypi/v/mdspec)
+![Black](https://img.shields.io/badge/code%20style-black-000000.svg)
+
 Looking at defining models / object specification in "plain text"
 for working w/ designers &amp; clients. 
 
